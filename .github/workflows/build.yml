@@ -18,7 +18,7 @@ jobs:
       run:
         shell: bash
     env:
-      GRIMACE_REF: "b45977d61441ee9f84d3d121b7472e7f1883af86"
+      GRIMACE_REF: "76d299e6de56d0a28f5f5ef70a9c4074961eaf74"
       GRIMACE_LLVM_RELEASE: "v5"
     steps:
       - uses: actions/checkout@v7

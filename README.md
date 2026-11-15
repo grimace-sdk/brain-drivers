@@ -24,7 +24,7 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `b45977d` and llvm-builds `v5`.
+`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `76d299e` and llvm-builds `v5`.
 
 ## Touchpad
 
