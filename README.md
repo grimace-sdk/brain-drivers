@@ -8,6 +8,7 @@ Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28),
 | [Touch shim](src/touchraw/README.md) | `touchraw.dll` | `TRD1:` | PW-SH2 | Sharp's | Sharp's `touchraw.dll`, kept as `touchra_.dll` |
 | Touchpad | `touchpad.dll` | `PAD1:` | PW-A7300 | `src/touchpad/touchpad.reg` | Nothing; new driver |
 | Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | PW-A7300 | Sharp's | Sharp's `EDNA2_slcd_ST7586.dll` |
+| [Backlight](src/backlight/README.md) | `backlight.dll` | `BKL1:` | PW-A7300; PW-SH2 experimental | Sharp's | Sharp's `backlight.dll` |
 
 The PW-A7300 `board.dll` adds `BRD_IOCTL_READ_FRAMEBUFFER` (`src/board/framebuffer.c`), which copies the framebuffer the display driver records in `HKLM\Software\Brain\Display` (`FramebufferPhysical`, `FramebufferWidth`, `FramebufferHeight`). The PW-SH2 and PW-SH4 builds are identical.
 
@@ -24,7 +25,7 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `76d299e` and llvm-builds `v5`.
+`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. `-DBRAIN_EXPERIMENTAL_BACKLIGHT=ON` adds `backlight.dll` to the PW-SH2 build. CI builds all three and pins grimace `76d299e` and llvm-builds `v5`.
 
 ## Touchpad
 
@@ -54,7 +55,7 @@ Codes, in `src/touchpad/touchpad_ioctl.h`:
 
 ## Sub LCD
 
-`EDNA2_slcd_ST7586.dll` (`SLD1:`) drives the 240x120 ST7586 sub LCD. It keeps Sharp's codes 1-14 and adds 4-level greyscale, an overlay, backlight brightness and buzzer tones. It keeps Sharp's file name because pw-a7300's patched `backlight.dll` imports `SubBacklightSetPinMux` and `SubBacklightWriteDataPin` from it.
+`EDNA2_slcd_ST7586.dll` (`SLD1:`) drives the 240x120 ST7586 sub LCD. It keeps Sharp's codes 1-14 and adds 4-level greyscale, an overlay, backlight brightness and buzzer tones. It keeps Sharp's file name because Sharp's `backlight.dll`, patched by brainsurgeon, imports `SubBacklightSetPinMux` and `SubBacklightWriteDataPin` from it; this repository's `backlight.dll` calls `SubBacklightWriteDataPin`.
 
 | File | Role |
 | --- | --- |
@@ -62,7 +63,7 @@ Codes, in `src/touchpad/touchpad_ioctl.h`:
 | `sld.c` | Stream driver, shadow buffer, Sharp's codes |
 | `st7586.*` | Controller setup and transfers |
 | `ssp_dma.*` | SSP2 DMA at 16 MHz, falling back to `SPI2:` |
-| `sub_backlight.*` | PWM2 brightness, stand-ins for `backlight.dll` |
+| `sub_backlight.*` | PWM2 brightness, called by `backlight.dll` |
 | `buzzer_tone.*` | Buzzer tones on PWM4/PWM7 |
 | `cspddk.txt` | Functions imported from the ROM's `CSPDDK.dll` |
 
@@ -85,7 +86,7 @@ Codes, in `src/sublcd/sublcd_ioctl.h`. Sharp's driver returns TRUE for unknown c
 
 ## grimace gaps
 
-`src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. grimace has no `CSPDDK.dll` import list for the Brain, so the sub LCD target makes its import library from `src/sublcd/cspddk.txt`.
+`src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. grimace has no `CSPDDK.dll` import list for the Brain, so the sub LCD and backlight targets make their import library from `src/sublcd/cspddk.txt`.
 
 ## License
 

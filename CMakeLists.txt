@@ -8,6 +8,7 @@ set_property(CACHE BRAIN_BOARD PROPERTY STRINGS pwsh2 pwsh4 pwa7300)
 if(NOT BRAIN_BOARD MATCHES "^(pwsh2|pwsh4|pwa7300)$")
     message(FATAL_ERROR "Set BRAIN_BOARD to pwsh2, pwsh4 or pwa7300")
 endif()
+option(BRAIN_EXPERIMENTAL_BACKLIGHT "Build backlight.dll for the PW-SH2 with Sharp's default PWM values, not yet checked on the device" OFF)
 
 function(driver_options target)
     target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter -O2 -g)
@@ -19,6 +20,15 @@ function(ce_options target)
     target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter)
     target_compile_definitions(${target} PRIVATE UNICODE _UNICODE)
 endfunction()
+
+set(CSPDDK_IMPORTS "${CMAKE_BINARY_DIR}/cspddk.S")
+add_custom_command(
+    OUTPUT "${CSPDDK_IMPORTS}"
+    COMMAND "${Python3_EXECUTABLE}" "${GRIMACE_TOOLCHAIN_ROOT}/tools/mkimplib.py"
+            "${CMAKE_SOURCE_DIR}/src/sublcd/cspddk.txt" CSPDDK.dll "${CSPDDK_IMPORTS}" --arch ${GRIMACE_IMPLIB_ARCH}
+    DEPENDS "${CMAKE_SOURCE_DIR}/src/sublcd/cspddk.txt"
+    VERBATIM)
+add_library(cspddk_imports STATIC EXCLUDE_FROM_ALL "${CSPDDK_IMPORTS}")
 
 grimace_add_library(board src/board/board.c src/board/cpu_scaling.c src/board/power_policy.c
     src/board/register_dump.c src/board/pin_sampler.c
@@ -43,15 +53,6 @@ if(BRAIN_BOARD STREQUAL "pwa7300")
         OUTPUT touchpad.dll EXPORTS PAD_Init PAD_Deinit PAD_Open PAD_Close PAD_IOControl)
     driver_options(touchpad)
 
-    set(CSPDDK_IMPORTS "${CMAKE_BINARY_DIR}/cspddk.S")
-    add_custom_command(
-        OUTPUT "${CSPDDK_IMPORTS}"
-        COMMAND "${Python3_EXECUTABLE}" "${GRIMACE_TOOLCHAIN_ROOT}/tools/mkimplib.py"
-                "${CMAKE_SOURCE_DIR}/src/sublcd/cspddk.txt" CSPDDK.dll "${CSPDDK_IMPORTS}" --arch ${GRIMACE_IMPLIB_ARCH}
-        DEPENDS "${CMAKE_SOURCE_DIR}/src/sublcd/cspddk.txt"
-        VERBATIM)
-    add_library(cspddk_imports STATIC EXCLUDE_FROM_ALL "${CSPDDK_IMPORTS}")
-
     grimace_add_library(sublcd src/sublcd/st7586.c src/sublcd/ssp_dma.c src/sublcd/sub_backlight.c
         src/sublcd/buzzer_tone.c src/sublcd/sld.c
         OUTPUT EDNA2_slcd_ST7586.dll
@@ -59,4 +60,14 @@ if(BRAIN_BOARD STREQUAL "pwa7300")
                 SLD_PowerDown SLD_PowerUp SubBacklightSetPinMux SubBacklightWriteDataPin)
     target_link_libraries(sublcd PRIVATE grimace::ceddk cspddk_imports)
     driver_options(sublcd)
+endif()
+
+if(BRAIN_BOARD STREQUAL "pwa7300" OR (BRAIN_BOARD STREQUAL "pwsh2" AND BRAIN_EXPERIMENTAL_BACKLIGHT))
+    grimace_add_library(backlight src/backlight/backlight.c src/backlight/backlight_curve.c
+        OUTPUT backlight.dll
+        EXPORTS BKL_Init BKL_Deinit BKL_Open BKL_Close BKL_Read BKL_Write BKL_Seek BKL_IOControl
+                BKL_PowerDown BKL_PowerUp)
+    target_link_libraries(backlight PRIVATE grimace::ceddk cspddk_imports)
+    target_compile_definitions(backlight PRIVATE BRAIN_BOARD_${BRAIN_BOARD})
+    driver_options(backlight)
 endif()
