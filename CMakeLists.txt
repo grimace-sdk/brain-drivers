@@ -3,7 +3,7 @@ project(a7300_drivers LANGUAGES C)
 
 include(Grimace)
 
-option(A7300_SUBLCD "Build the sub LCD driver (needs src/sublcd/st7586.c and cspddk.h)" OFF)
+option(A7300_SUBLCD "Build the sub LCD driver" ON)
 
 function(driver_options target)
     target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter -O2 -g)
