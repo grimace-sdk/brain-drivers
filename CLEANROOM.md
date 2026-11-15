@@ -50,7 +50,7 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 
 Not provenance items:
 
-- The backlight curve, the 5% low-current crossover, `DimLevel` 20, `FloorLuminance` and the `HKLM\Software\Brain\Backlight` settings. The 1/2000 minimum and the halving with PWM1 low come from the user's PW-A7300 test on 2026-11-15, and the 0.75% `FloorLuminance` default from their level test the same day.
+- The backlight curve, the 5% low-current crossover, `DimLevel` 20, `FloorLuminance` and the `HKLM\Software\Brain\Backlight` settings. The 1/2000 minimum, the 24% `LowCurrentPercent` and the 0.36% `FloorLuminance` defaults come from the user's PW-A7300 tests on 2026-11-15.
 - The kernel debug log ring that `src/board/register_dump.c` reads: 0x401E0000 on the PW-SH2 (u-boot-brain's `pwsh2_ce_defconfig`) and 0x40180000 on the PW-A7300 (u-boot-brain's Kconfig default, which `pwa7300_ce_defconfig` keeps), matching make-boot-nkp's `--debug-log-address`. `pwsh4_ce_defconfig` does not enable the log; the PW-SH4 build uses 0x401E0000.
 
 ## Registers

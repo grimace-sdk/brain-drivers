@@ -26,31 +26,31 @@ The driver owns PWM0 and PWM1 and writes them in full; nothing else may. `CTRL` 
 | PWM0 | Main duty | Main duty |
 | PWM1 | Constant high, or constant low for the low-current range | Same |
 
-PWM1 low gives about half the brightness at the same PWM0 duty.
+PWM1 low gives about a quarter of the brightness at the same PWM0 duty.
 
 ## Curve
 
 Lightness (cube root of luminance) rises linearly from level 1 to 100:
 
-- Level 1 is `FloorLuminance`, 0.75% of full by default.
+- Level 1 is `FloorLuminance`, 0.36% of full by default.
 - Level 100 is PWM0 constant high with PWM1 high.
 - Below 5% of full luminance, PWM1 is low and PWM0 runs at twice the duty, scaled by `LowCurrentPercent`.
 
-PW-A7300, `LowCurrentPercent` 50:
+PW-A7300, `LowCurrentPercent` 24:
 
 | Level | PWM0 counts | PWM1 | Of full |
 | --- | --- | --- | --- |
-| 1 | 30 | low | 0.75% |
-| 5 | 47 | low | 1.2% |
-| 10 | 78 | low | 1.9% |
-| 20 | 172 | low | 4.3% |
-| 22 | 197 | low | 4.9% |
-| 23 | 105 | high | 5.2% |
-| 50 | 419 | high | 20.9% |
-| 75 | 1012 | high | 50.6% |
+| 1 | 30 | low | 0.36% |
+| 5 | 55 | low | 0.66% |
+| 10 | 102 | low | 1.2% |
+| 20 | 262 | low | 3.2% |
+| 26 | 412 | low | 4.9% |
+| 27 | 106 | high | 5.3% |
+| 50 | 375 | high | 18.7% |
+| 75 | 972 | high | 48.6% |
 | 100 | 2000 | high | 100% |
 
-Sharp's levels 1, 25, 50, 75 and 100 are about 23, 35, 59, 78 and 91 here.
+Sharp's levels 1, 25, 50, 75 and 100 are about 27, 38, 61, 79 and 91 here.
 
 ## Levels
 
@@ -80,8 +80,8 @@ On the PW-A7300 the sub backlight is on while `Display_Event_Backlight_SubActive
 | `DimLevel` | 1-100, default 20 |
 | `MinimumLevel` | 1-100, default 1 |
 | `MaximumLevel` | 1-100, default 100 |
-| `LowCurrentPercent` | Brightness with PWM1 low, as a percentage of PWM1 high at the same PWM0 duty; 1-100, default 50 |
-| `FloorLuminance` | Level 1, in hundredths of a percent of full; 1-10000, default 75 |
+| `LowCurrentPercent` | Brightness with PWM1 low, as a percentage of PWM1 high at the same PWM0 duty; 1-100, default 24 |
+| `FloorLuminance` | Level 1, in hundredths of a percent of full; 1-10000, default 36 |
 
 Read at every apply. Sharp's `HKCU\ControlPanel\Backlight` timeouts are not used; `board.dll`'s power policy owns idle.
 
