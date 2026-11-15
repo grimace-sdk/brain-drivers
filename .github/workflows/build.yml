@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      GRIMACE_REF: "0aa10fc15293641cfb9254ff087534e56a0697ea"
+      GRIMACE_LLVM_RELEASE: "v5"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm cmake ninja-build
+
+      - name: Check out grimace
+        uses: actions/checkout@v7
+        with:
+          repository: grimace-sdk/grimace
+          ref: ${{ env.GRIMACE_REF }}
+          path: grimace
+
+      - name: Download the Windows CE LLVM
+        run: |
+          name=llvm-$GRIMACE_LLVM_RELEASE-linux-x86_64
+          url=https://github.com/grimace-sdk/llvm-builds/releases/download/$GRIMACE_LLVM_RELEASE
+          curl -fsSLO "$url/$name.tar.xz"
+          curl -fsSLO "$url/$name.tar.xz.sha256"
+          shasum -a 256 -c "$name.tar.xz.sha256"
+          tar xf "$name.tar.xz" -C "$RUNNER_TEMP"
+          echo "GRIMACE_LLVM_ROOT=$RUNNER_TEMP/$name" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$PWD/grimace/cmake/toolchain.cmake" \
+            -DGRIMACE_ARCH=arm -DGRIMACE_CE_VERSION=6 -DGRIMACE_PLATFORM=brain \
+            -DGRIMACE_LLVM_ROOT="$GRIMACE_LLVM_ROOT"
+          cmake --build build
+
+      - name: Collect DLLs
+        run: |
+          mkdir -p dist
+          cp build/*.dll dist/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: a7300-drivers-dlls
+          path: dist/*.dll
+
+      - name: Attach to tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "a7300-drivers $GITHUB_REF_NAME"
+          gh release upload "$GITHUB_REF_NAME" dist/*.dll --clobber
