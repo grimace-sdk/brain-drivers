@@ -30,7 +30,7 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 
 ### Platform Builder constant
 
-- `SH_WMGR` = 17, the window manager API set for `WaitForAPIReady`, in `src/compat/ce_compat.h`.
+- `SH_WMGR` = 17, the window manager API set for `WaitForAPIReady`, used by `src/touchpad/touchpad.c` and declared by grimace's `pkfuncs.h`.
 
 ## Listed, awaiting confirmation
 
@@ -41,7 +41,6 @@ Listed on 2026-11-15 when the board and touchraw drivers and the PW-A7300 frameb
 - `PWR1:` (`edna2_powermgr.dll`) codes 0x0022002C (power-off time) and 0x00220030 (light-off time), in `src/board/power_policy.c`.
 - The events `PowerManager/ActivityTimer/EdUserActivity` and `EdSystemActivity` of Sharp's `pm.dll`, and `Display_Event_Backlight_Activating`, `Display_Event_Backlight_DIMBlanking` and `Display_Event_PowerManager_Update` of Sharp's backlight handling.
 - Sharp's boot clock (240 MHz CPU, 120 MHz AHB, VDDD 1.55 V), in `src/board/cpu_scaling.c`.
-- The kernel debug log ring at 0x401E0000, read by `src/board/register_dump.c`.
 - Sharp's raw touch driver (`touchra_.dll`): its `TRD_*` exports, `TRD_IOCTL_SAMPLE` 0x8000202F and the pressure limit code 0x80002043, in `src/touchraw`.
 
 ### NXP BSP interface
@@ -50,7 +49,13 @@ Listed on 2026-11-15 when the board and touchraw drivers and the PW-A7300 frameb
 
 ### Platform Builder constant
 
-- `CACHE_SYNC_WRITEBACK` = 0x004 for `CacheSync`, in `src/compat/ce_compat.h`, used by `src/board/framebuffer.c`. Accepted for brain-display.
+- `CACHE_SYNC_WRITEBACK` = 0x004 for `CacheSync`, used by `src/board/framebuffer.c` and declared by grimace's `pkfuncs.h`. Accepted for brain-display.
+
+## Project choices
+
+Not provenance items:
+
+- The kernel debug log ring that `src/board/register_dump.c` reads: 0x401E0000 on the PW-SH2 (u-boot-brain's `pwsh2_ce_defconfig`) and 0x40180000 on the PW-A7300 (u-boot-brain's Kconfig default, which `pwa7300_ce_defconfig` keeps), matching make-boot-nkp's `--debug-log-address`. `pwsh4_ce_defconfig` does not enable the log; the PW-SH4 build uses 0x401E0000.
 
 ## Registers
 
