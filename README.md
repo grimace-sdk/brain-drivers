@@ -24,7 +24,7 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `7a5bdf4` and llvm-builds `v5`.
+`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `5576b69` and llvm-builds `v5`.
 
 ## Touchpad
 
@@ -85,7 +85,7 @@ Codes, in `src/sublcd/sublcd_ioctl.h`. Sharp's driver returns TRUE for unknown c
 
 ## grimace gaps
 
-`src/compat/ce_compat.h` covers what grimace's headers lack: `WaitForAPIReady` and `SH_WMGR`, `CacheSync` and `CACHE_SYNC_WRITEBACK`, and a `RETAILMSG` that prints through `NKDbgPrintfW` (grimace's is empty). The board and touchraw drivers don't include it, so their `RETAILMSG` lines print nothing. `src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. The sub LCD target makes its `CSPDDK.dll` import library from `src/sublcd/cspddk.txt`.
+`src/compat/ce_compat.h` declares `CacheSync` and `CACHE_SYNC_WRITEBACK`, which grimace's headers lack. `src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. The sub LCD target makes its `CSPDDK.dll` import library from `src/sublcd/cspddk.txt`.
 
 ## License
 
