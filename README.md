@@ -1,6 +1,6 @@
-# a7300-drivers
+# brain-drivers
 
-Windows CE 6.0 drivers for the Sharp Brain PW-A7300 (i.MX28), built with [grimace](https://github.com/grimace-sdk/grimace).
+Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28), built with [grimace](https://github.com/grimace-sdk/grimace).
 
 | Driver | Output | Device | Replaces |
 | --- | --- | --- | --- |
@@ -15,11 +15,12 @@ Read [CLEANROOM.md](CLEANROOM.md) before changing anything. It lists the Sharp a
 cmake -S . -B build -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE="$GRIMACE/cmake/toolchain.cmake" \
     -DGRIMACE_ARCH=arm -DGRIMACE_CE_VERSION=6 -DGRIMACE_PLATFORM=brain \
-    -DGRIMACE_LLVM_ROOT="$GRIMACE_LLVM"
+    -DGRIMACE_LLVM_ROOT="$GRIMACE_LLVM" \
+    -DBRAIN_BOARD=pwa7300
 cmake --build build
 ```
 
-CI pins grimace `0aa10fc` and llvm-builds `v5`.
+`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `7a5bdf4` and llvm-builds `v5`.
 
 ## Touchpad
 

@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
-project(a7300_drivers LANGUAGES C)
+project(brain_drivers LANGUAGES C)
 
 include(Grimace)
 
-option(A7300_SUBLCD "Build the sub LCD driver" ON)
+set(BRAIN_BOARD "" CACHE STRING "Board to build for: pwsh2, pwsh4 or pwa7300")
+set_property(CACHE BRAIN_BOARD PROPERTY STRINGS pwsh2 pwsh4 pwa7300)
+if(NOT BRAIN_BOARD MATCHES "^(pwsh2|pwsh4|pwa7300)$")
+    message(FATAL_ERROR "Set BRAIN_BOARD to pwsh2, pwsh4 or pwa7300")
+endif()
 
 function(driver_options target)
     target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter -O2 -g)
@@ -11,11 +15,11 @@ function(driver_options target)
     target_include_directories(${target} PRIVATE src/compat)
 endfunction()
 
-grimace_add_library(touchpad src/touchpad/touchpad.c src/touchpad/motion.c
-    OUTPUT touchpad.dll EXPORTS PAD_Init PAD_Deinit PAD_Open PAD_Close PAD_IOControl)
-driver_options(touchpad)
+if(BRAIN_BOARD STREQUAL "pwa7300")
+    grimace_add_library(touchpad src/touchpad/touchpad.c src/touchpad/motion.c
+        OUTPUT touchpad.dll EXPORTS PAD_Init PAD_Deinit PAD_Open PAD_Close PAD_IOControl)
+    driver_options(touchpad)
 
-if(A7300_SUBLCD)
     set(CSPDDK_IMPORTS "${CMAKE_BINARY_DIR}/cspddk.S")
     add_custom_command(
         OUTPUT "${CSPDDK_IMPORTS}"
