@@ -16,6 +16,9 @@
 #include "register_dump.h"
 #include "pin_sampler.h"
 #include "board_ioctl.h"
+#ifdef BRAIN_BOARD_pwa7300
+#include "framebuffer.h"
+#endif
 
 #define DRIVER_VERSION              1
 #define DEVICE_CONTEXT              0x42524431
@@ -193,6 +196,11 @@ BOOL BRD_IOControl(DWORD OpenContext, DWORD Code, PBYTE pIn, DWORD InSize, PBYTE
             *pReturned = sizeof(BRD_PIN_SAMPLE);
         return TRUE;
     }
+
+#ifdef BRAIN_BOARD_pwa7300
+    if (Code == BRD_IOCTL_READ_FRAMEBUFFER)
+        return FramebufferRead(pOut, OutSize, pReturned);
+#endif
 
     SetLastError(ERROR_NOT_SUPPORTED);
     return FALSE;

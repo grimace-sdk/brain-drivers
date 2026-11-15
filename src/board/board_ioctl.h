@@ -12,6 +12,7 @@
 #define BRD_IOCTL_READ_REGISTERS    0x101
 #define BRD_IOCTL_CPU_SCALING       0x102
 #define BRD_IOCTL_SAMPLE_PINS       0x103
+#define BRD_IOCTL_READ_FRAMEBUFFER  0x104
 
 #define BRD_INFO_MAGIC              0x31445242
 
@@ -66,5 +67,19 @@ typedef struct
     DWORD FirstRise[BRD_PIN_BANKS][32];
     DWORD LastRise[BRD_PIN_BANKS][32];
 } BRD_PIN_SAMPLE;
+
+//
+// BRD_IOCTL_READ_FRAMEBUFFER: no input; output BRD_FRAMEBUFFER followed by
+// Width x Height RGB565 pixels, top row first. The display driver records
+// where its framebuffer is; reading it needs no GWES, so it works while an
+// app holds GWES. With an output buffer too small for the pixels only the
+// header is written, with ERROR_INSUFFICIENT_BUFFER.
+//
+typedef struct
+{
+    DWORD Width;
+    DWORD Height;
+    DWORD BitsPerPixel;
+} BRD_FRAMEBUFFER;
 
 #endif /* __BOARD_IOCTL_H__ */

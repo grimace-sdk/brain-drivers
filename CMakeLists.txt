@@ -25,6 +25,11 @@ grimace_add_library(board src/board/board.c src/board/cpu_scaling.c src/board/po
     OUTPUT board.dll EXPORTS BRD_Init BRD_Deinit BRD_Open BRD_Close BRD_IOControl BRD_PowerDown BRD_PowerUp)
 target_link_libraries(board PRIVATE grimace::ceddk)
 ce_options(board)
+if(BRAIN_BOARD STREQUAL "pwa7300")
+    target_sources(board PRIVATE src/board/framebuffer.c)
+    target_compile_definitions(board PRIVATE BRAIN_BOARD_pwa7300)
+    target_include_directories(board PRIVATE src/compat)
+endif()
 
 if(BRAIN_BOARD STREQUAL "pwsh2")
     grimace_add_library(touchraw src/touchraw/touchraw.c
