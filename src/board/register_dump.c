@@ -13,6 +13,12 @@
 #include <ceddk.h>
 #include "register_dump.h"
 
+#ifdef BRAIN_BOARD_pwa7300
+#define DEBUG_LOG_ADDRESS           0x40180000
+#else
+#define DEBUG_LOG_ADDRESS           0x401E0000
+#endif
+
 typedef struct
 {
     DWORD Base;
@@ -30,7 +36,7 @@ static REGISTER_BLOCK s_Blocks[] =
     { 0x800301B0, 0x0050, NULL },
     { 0x80014000, 0x0090, NULL },
     { 0x8002A000, 0x0300, NULL },
-    { 0x401E0000, 0x0100, NULL },
+    { DEBUG_LOG_ADDRESS, 0x0100, NULL },
 };
 
 //------------------------------------------------------------------------------
