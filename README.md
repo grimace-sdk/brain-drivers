@@ -7,7 +7,7 @@ Windows CE 6.0 drivers for the Sharp Brain PW-A7300 (i.MX28), built with [grimac
 | Touchpad | `touchpad.dll` | `PAD1:` | Nothing; new driver |
 | Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | Sharp's `EDNA2_slcd_ST7586.dll` |
 
-Status: the touchpad builds. The sub LCD sources are in `src/sublcd` but the target is off (`A7300_SUBLCD`) until `st7586.c` and `cspddk.h` are added; see [Sub LCD](#sub-lcd).
+Read [CLEANROOM.md](CLEANROOM.md) before changing anything. It lists the Sharp and NXP interface facts the user has accepted.
 
 ## Build
 
@@ -55,16 +55,11 @@ Codes, in `src/touchpad/touchpad_ioctl.h`:
 | --- | --- |
 | `sublcd_ioctl.h` | Codes and structures for apps |
 | `sld.c` | Stream driver, shadow buffer, Sharp's codes |
-| `st7586.h` | Controller setup and transfers |
+| `st7586.*` | Controller setup and transfers |
 | `ssp_dma.*` | SSP2 DMA at 16 MHz, falling back to `SPI2:` |
 | `sub_backlight.*` | PWM2 brightness, stand-ins for `backlight.dll` |
 | `buzzer_tone.*` | Buzzer tones on PWM4/PWM7 |
 | `cspddk.txt` | Functions imported from the ROM's `CSPDDK.dll` |
-
-Not yet here, so `A7300_SUBLCD` is off:
-
-- `st7586.c`: the controller init and `SPI2:` setup.
-- `cspddk.h`: declarations for the `CSPDDK.dll` IOMUX, GPIO and APBH functions and the `SPI2:` codes and structures.
 
 | `HKLM\Software\Brain\SubLCD` | |
 | --- | --- |
@@ -85,7 +80,7 @@ Codes, in `src/sublcd/sublcd_ioctl.h`. Sharp's driver returns TRUE for unknown c
 
 ## grimace gaps
 
-`src/compat/ce_compat.h` covers what grimace's headers lack: `WaitForAPIReady` and `SH_WMGR`, and a `RETAILMSG` that prints through `NKDbgPrintfW` (grimace's is empty). There is no `CSPDDK.dll` import list for the Brain, so the sub LCD target makes one from `cspddk.txt`.
+`src/compat/ce_compat.h` covers what grimace's headers lack: `WaitForAPIReady` and `SH_WMGR`, and a `RETAILMSG` that prints through `NKDbgPrintfW` (grimace's is empty). `src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. The sub LCD target makes its `CSPDDK.dll` import library from `src/sublcd/cspddk.txt`.
 
 ## License
 
