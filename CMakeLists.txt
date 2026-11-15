@@ -15,6 +15,24 @@ function(driver_options target)
     target_include_directories(${target} PRIVATE src/compat)
 endfunction()
 
+function(ce_options target)
+    target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter)
+    target_compile_definitions(${target} PRIVATE UNICODE _UNICODE)
+endfunction()
+
+grimace_add_library(board src/board/board.c src/board/cpu_scaling.c src/board/power_policy.c
+    src/board/register_dump.c src/board/pin_sampler.c
+    OUTPUT board.dll EXPORTS BRD_Init BRD_Deinit BRD_Open BRD_Close BRD_IOControl BRD_PowerDown BRD_PowerUp)
+target_link_libraries(board PRIVATE grimace::ceddk)
+ce_options(board)
+
+if(BRAIN_BOARD STREQUAL "pwsh2")
+    grimace_add_library(touchraw src/touchraw/touchraw.c
+        OUTPUT touchraw.dll EXPORTS TRD_Init TRD_Deinit TRD_Open TRD_Close TRD_Read TRD_IOControl TRD_PowerDown TRD_PowerUp)
+    target_link_libraries(touchraw PRIVATE grimace::ceddk)
+    ce_options(touchraw)
+endif()
+
 if(BRAIN_BOARD STREQUAL "pwa7300")
     grimace_add_library(touchpad src/touchpad/touchpad.c src/touchpad/motion.c
         OUTPUT touchpad.dll EXPORTS PAD_Init PAD_Deinit PAD_Open PAD_Close PAD_IOControl)
