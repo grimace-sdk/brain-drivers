@@ -1,0 +1,8 @@
+DDKApbhDmaGetPhore
+DDKApbhDmaInitChan
+DDKApbhDmaResetChan
+DDKApbhStartDma
+DDKGpioEnableDataPin
+DDKGpioWriteDataPin
+DDKIomuxSetPadConfig
+DDKIomuxSetPinMux
