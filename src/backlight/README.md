@@ -32,7 +32,7 @@ PWM1 low gives about half the brightness at the same PWM0 duty.
 
 Lightness (cube root of luminance) rises linearly from level 1 to 100:
 
-- Level 1 is one PWM0 count with PWM1 low, about 1/4000 of full on the PW-A7300.
+- Level 1 is `FloorLuminance`, 0.75% of full by default.
 - Level 100 is PWM0 constant high with PWM1 high.
 - Below 5% of full luminance, PWM1 is low and PWM0 runs at twice the duty, scaled by `LowCurrentPercent`.
 
@@ -40,17 +40,17 @@ PW-A7300, `LowCurrentPercent` 50:
 
 | Level | PWM0 counts | PWM1 | Of full |
 | --- | --- | --- | --- |
-| 1 | 1 | low | 0.03% |
-| 5 | 4 | low | 0.1% |
-| 10 | 13 | low | 0.3% |
-| 20 | 57 | low | 1.4% |
-| 33 | 196 | low | 4.9% |
-| 34 | 106 | high | 5.3% |
-| 50 | 292 | high | 14.6% |
-| 75 | 889 | high | 44.5% |
+| 1 | 30 | low | 0.75% |
+| 5 | 47 | low | 1.2% |
+| 10 | 78 | low | 1.9% |
+| 20 | 172 | low | 4.3% |
+| 22 | 197 | low | 4.9% |
+| 23 | 105 | high | 5.2% |
+| 50 | 419 | high | 20.9% |
+| 75 | 1012 | high | 50.6% |
 | 100 | 2000 | high | 100% |
 
-Sharp's levels 1, 25, 50, 75 and 100 are about 34, 44, 65, 81 and 92 here.
+Sharp's levels 1, 25, 50, 75 and 100 are about 23, 35, 59, 78 and 91 here.
 
 ## Levels
 
@@ -81,6 +81,7 @@ On the PW-A7300 the sub backlight is on while `Display_Event_Backlight_SubActive
 | `MinimumLevel` | 1-100, default 1 |
 | `MaximumLevel` | 1-100, default 100 |
 | `LowCurrentPercent` | Brightness with PWM1 low, as a percentage of PWM1 high at the same PWM0 duty; 1-100, default 50 |
+| `FloorLuminance` | Level 1, in hundredths of a percent of full; 1-10000, default 75 |
 
 Read at every apply. Sharp's `HKCU\ControlPanel\Backlight` timeouts are not used; `board.dll`'s power policy owns idle.
 

@@ -7,6 +7,6 @@ typedef struct
     BOOL bLowCurrent;
 } BACKLIGHT_OUTPUT;
 
-void BacklightCurve(DWORD Level, DWORD PeriodCounts, DWORD LowCurrentPercent, BACKLIGHT_OUTPUT* pOutput);
+void BacklightCurve(DWORD Level, DWORD PeriodCounts, DWORD LowCurrentPercent, DWORD FloorLuminance, BACKLIGHT_OUTPUT* pOutput);
 
 #endif

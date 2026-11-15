@@ -23,6 +23,8 @@
 #define DEFAULT_LEVEL               50
 #define DEFAULT_DIM_LEVEL           20
 #define DEFAULT_LOW_CURRENT_PERCENT 50
+#define DEFAULT_FLOOR_LUMINANCE     75
+#define FLOOR_LUMINANCE_MAXIMUM     10000
 #define SHARP_BRIGHTEST_LEVEL       120
 
 #define IOCTL_POWER_QUERY           0x0032100C
@@ -61,6 +63,7 @@ typedef struct
     DWORD MinimumLevel;
     DWORD MaximumLevel;
     DWORD LowCurrentPercent;
+    DWORD FloorLuminance;
 } BACKLIGHT_SETTINGS;
 
 static CRITICAL_SECTION s_Lock;
@@ -109,12 +112,14 @@ static void ReadSettings(BACKLIGHT_SETTINGS* pSettings)
     pSettings->MinimumLevel = BKL_LEVEL_MINIMUM;
     pSettings->MaximumLevel = BKL_LEVEL_MAXIMUM;
     pSettings->LowCurrentPercent = DEFAULT_LOW_CURRENT_PERCENT;
+    pSettings->FloorLuminance = DEFAULT_FLOOR_LUMINANCE;
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, BKL_SETTINGS_KEY, 0, 0, &hKey) == ERROR_SUCCESS)
     {
         pSettings->DimLevel = ReadValue(hKey, TEXT("DimLevel"), DEFAULT_DIM_LEVEL);
         pSettings->MinimumLevel = ReadValue(hKey, TEXT("MinimumLevel"), BKL_LEVEL_MINIMUM);
         pSettings->MaximumLevel = ReadValue(hKey, TEXT("MaximumLevel"), BKL_LEVEL_MAXIMUM);
         pSettings->LowCurrentPercent = ReadValue(hKey, TEXT("LowCurrentPercent"), DEFAULT_LOW_CURRENT_PERCENT);
+        pSettings->FloorLuminance = ReadValue(hKey, TEXT("FloorLuminance"), DEFAULT_FLOOR_LUMINANCE);
         RegCloseKey(hKey);
     }
     pSettings->DimLevel = ClampLevel(pSettings->DimLevel);
@@ -124,6 +129,8 @@ static void ReadSettings(BACKLIGHT_SETTINGS* pSettings)
         pSettings->MaximumLevel = pSettings->MinimumLevel;
     if (pSettings->LowCurrentPercent < 1 || pSettings->LowCurrentPercent > 100)
         pSettings->LowCurrentPercent = DEFAULT_LOW_CURRENT_PERCENT;
+    if (pSettings->FloorLuminance < 1 || pSettings->FloorLuminance > FLOOR_LUMINANCE_MAXIMUM)
+        pSettings->FloorLuminance = DEFAULT_FLOOR_LUMINANCE;
 }
 
 static BOOL EventExists(LPCTSTR pName)
@@ -264,7 +271,7 @@ static void ApplyMainLocked()
         s_AppliedOutput.bLowCurrent = FALSE;
         return;
     }
-    BacklightCurve(Level, s_Board.PeriodCounts, Settings.LowCurrentPercent, &Output);
+    BacklightCurve(Level, s_Board.PeriodCounts, Settings.LowCurrentPercent, Settings.FloorLuminance, &Output);
     WriteMain(&Output);
     s_AppliedLevel = Level;
     s_AppliedOutput = Output;

@@ -4,6 +4,7 @@
 #define LIGHTNESS_FULL              10000ULL
 #define LUMINANCE_FULL              (LIGHTNESS_FULL * LIGHTNESS_FULL * LIGHTNESS_FULL)
 #define CROSSOVER_PERCENT           5ULL
+#define LUMINANCE_FLOOR_SCALE       10000ULL
 #define LEVEL_MINIMUM               1
 #define LEVEL_MAXIMUM               100
 
@@ -28,7 +29,7 @@ static unsigned long long DivideRounded(unsigned long long Numerator, unsigned l
     return (Numerator + Denominator / 2) / Denominator;
 }
 
-void BacklightCurve(DWORD Level, DWORD PeriodCounts, DWORD LowCurrentPercent, BACKLIGHT_OUTPUT* pOutput)
+void BacklightCurve(DWORD Level, DWORD PeriodCounts, DWORD LowCurrentPercent, DWORD FloorLuminance, BACKLIGHT_OUTPUT* pOutput)
 {
     unsigned long long FloorLightness, Lightness, Luminance, LowCounts, FullCounts;
 
@@ -37,7 +38,7 @@ void BacklightCurve(DWORD Level, DWORD PeriodCounts, DWORD LowCurrentPercent, BA
     if (Level > LEVEL_MAXIMUM)
         Level = LEVEL_MAXIMUM;
 
-    FloorLightness = CubeRoot(LUMINANCE_FULL * LowCurrentPercent / (100ULL * PeriodCounts));
+    FloorLightness = CubeRoot(LUMINANCE_FULL * FloorLuminance / LUMINANCE_FLOOR_SCALE);
     Lightness = FloorLightness + (LIGHTNESS_FULL - FloorLightness) * (Level - LEVEL_MINIMUM) / (LEVEL_MAXIMUM - LEVEL_MINIMUM);
     Luminance = Lightness * Lightness * Lightness;
 
