@@ -8,7 +8,7 @@ Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28),
 | [Touch shim](src/touchraw/README.md) | `touchraw.dll` | `TRD1:` | PW-SH2 | Sharp's | Sharp's `touchraw.dll`, kept as `touchra_.dll` |
 | Touchpad | `touchpad.dll` | `PAD1:` | PW-A7300 | `src/touchpad/touchpad.reg` | Nothing; new driver |
 | Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | PW-A7300 | Sharp's | Sharp's `EDNA2_slcd_ST7586.dll` |
-| [Backlight](src/backlight/README.md) | `backlight.dll` | `BKL1:` | PW-A7300; PW-SH2 experimental | Sharp's | Sharp's `backlight.dll` |
+| [Backlight](src/backlight/README.md) | `backlight.dll` | `BKL1:` | PW-A7300, PW-SH2 | Sharp's | Sharp's `backlight.dll` |
 
 The PW-A7300 `board.dll` adds `BRD_IOCTL_READ_FRAMEBUFFER` (`src/board/framebuffer.c`), which copies the framebuffer the display driver records in `HKLM\Software\Brain\Display` (`FramebufferPhysical`, `FramebufferWidth`, `FramebufferHeight`). The PW-SH2 and PW-SH4 builds are identical.
 
@@ -25,7 +25,7 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. `-DBRAIN_EXPERIMENTAL_BACKLIGHT=ON` adds `backlight.dll` to the PW-SH2 build. CI builds all three and pins grimace `76d299e` and llvm-builds `v5`.
+`BRAIN_BOARD` is `pwsh2`, `pwsh4` or `pwa7300`; use one build directory per board. CI builds all three and pins grimace `76d299e` and llvm-builds `v5`.
 
 ## Touchpad
 

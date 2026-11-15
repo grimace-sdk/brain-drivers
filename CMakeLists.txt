@@ -8,7 +8,6 @@ set_property(CACHE BRAIN_BOARD PROPERTY STRINGS pwsh2 pwsh4 pwa7300)
 if(NOT BRAIN_BOARD MATCHES "^(pwsh2|pwsh4|pwa7300)$")
     message(FATAL_ERROR "Set BRAIN_BOARD to pwsh2, pwsh4 or pwa7300")
 endif()
-option(BRAIN_EXPERIMENTAL_BACKLIGHT "Build backlight.dll for the PW-SH2 with Sharp's default PWM values, not yet checked on the device" OFF)
 
 function(driver_options target)
     target_compile_options(${target} PRIVATE -Wall -Werror -Wno-unused-parameter -O2 -g)
@@ -62,7 +61,7 @@ if(BRAIN_BOARD STREQUAL "pwa7300")
     driver_options(sublcd)
 endif()
 
-if(BRAIN_BOARD STREQUAL "pwa7300" OR (BRAIN_BOARD STREQUAL "pwsh2" AND BRAIN_EXPERIMENTAL_BACKLIGHT))
+if(BRAIN_BOARD STREQUAL "pwa7300" OR BRAIN_BOARD STREQUAL "pwsh2")
     grimace_add_library(backlight src/backlight/backlight.c src/backlight/backlight_curve.c
         OUTPUT backlight.dll
         EXPORTS BKL_Init BKL_Deinit BKL_Open BKL_Close BKL_Read BKL_Write BKL_Seek BKL_IOControl

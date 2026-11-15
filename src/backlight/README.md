@@ -2,7 +2,7 @@
 
 `backlight.dll` (`BKL1:`) replaces Sharp's `backlight.dll`. It keeps Sharp's codes, events and registry key, so `pm.dll`, `edna2_powermgr.dll`, SharpLib, bstart and the brightness applets work unchanged, and adds levels 1-100 on a perceptual curve, a lower minimum and a dim level setting.
 
-Built for the PW-A7300. The PW-SH2 values are Sharp's defaults, not yet read on a device; configure with `-DBRAIN_EXPERIMENTAL_BACKLIGHT=ON` to build it. The PW-SH4 has no values.
+Built for the PW-A7300 and the PW-SH2. The PW-SH4 has no values.
 
 ```
 node tools/make-boot-nkp.mjs ... --skip --replace-module backlight.dll=out/backlight.dll
