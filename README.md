@@ -2,10 +2,14 @@
 
 Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28), built with [grimace](https://github.com/grimace-sdk/grimace).
 
-| Driver | Output | Device | Replaces |
-| --- | --- | --- | --- |
-| Touchpad | `touchpad.dll` | `PAD1:` | Nothing; new driver |
-| Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | Sharp's `EDNA2_slcd_ST7586.dll` |
+| Driver | Output | Device | Boards | Registry | Replaces |
+| --- | --- | --- | --- | --- | --- |
+| [Board](src/board/README.md) | `board.dll` | `BRD1:` | all | `src/board/board.reg` | Nothing; new driver |
+| [Touch shim](src/touchraw/README.md) | `touchraw.dll` | `TRD1:` | PW-SH2 | Sharp's | Sharp's `touchraw.dll`, kept as `touchra_.dll` |
+| Touchpad | `touchpad.dll` | `PAD1:` | PW-A7300 | `src/touchpad/touchpad.reg` | Nothing; new driver |
+| Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | PW-A7300 | Sharp's | Sharp's `EDNA2_slcd_ST7586.dll` |
+
+The PW-A7300 `board.dll` adds `BRD_IOCTL_READ_FRAMEBUFFER` (`src/board/framebuffer.c`), which copies the framebuffer the display driver records in `HKLM\Software\Brain\Display` (`FramebufferPhysical`, `FramebufferWidth`, `FramebufferHeight`). The PW-SH2 and PW-SH4 builds are identical.
 
 Read [CLEANROOM.md](CLEANROOM.md) before changing anything. It lists the Sharp and NXP interface facts the user has accepted.
 
@@ -81,7 +85,7 @@ Codes, in `src/sublcd/sublcd_ioctl.h`. Sharp's driver returns TRUE for unknown c
 
 ## grimace gaps
 
-`src/compat/ce_compat.h` covers what grimace's headers lack: `WaitForAPIReady` and `SH_WMGR`, and a `RETAILMSG` that prints through `NKDbgPrintfW` (grimace's is empty). `src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. The sub LCD target makes its `CSPDDK.dll` import library from `src/sublcd/cspddk.txt`.
+`src/compat/ce_compat.h` covers what grimace's headers lack: `WaitForAPIReady` and `SH_WMGR`, `CacheSync` and `CACHE_SYNC_WRITEBACK`, and a `RETAILMSG` that prints through `NKDbgPrintfW` (grimace's is empty). The board and touchraw drivers don't include it, so their `RETAILMSG` lines print nothing. `src/compat/cspddk.h` and `src/compat/spi2.h` declare the `CSPDDK.dll` functions and the `SPI2:` interface. The sub LCD target makes its `CSPDDK.dll` import library from `src/sublcd/cspddk.txt`.
 
 ## License
 

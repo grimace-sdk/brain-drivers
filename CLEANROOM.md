@@ -1,6 +1,6 @@
 # Clean Room
 
-The drivers are ported from the user's ce600 prototype, which was written alongside Sharp's drivers and NXP's BSP. Only the user's own code was ported. Nothing in this repository is copied from Platform Builder, NXP/Freescale BSP sources or headers, or Sharp's binaries.
+The sub LCD, touchpad and PW-A7300 framebuffer code is ported from the user's ce600 prototype, which was written alongside Sharp's drivers and NXP's BSP. The board and touchraw drivers come from pwsh2-boot at 1134d04. Only the user's own code was ported. Nothing in this repository is copied from Platform Builder, NXP/Freescale BSP sources or headers, or Sharp's binaries.
 
 ## Not allowed
 
@@ -32,6 +32,26 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 
 - `SH_WMGR` = 17, the window manager API set for `WaitForAPIReady`, in `src/compat/ce_compat.h`.
 
+## Listed, awaiting confirmation
+
+Listed on 2026-11-15 when the board and touchraw drivers and the PW-A7300 framebuffer read were added. The user has accepted values like these before; confirm before treating them as accepted.
+
+### Sharp image or binary
+
+- `PWR1:` (`edna2_powermgr.dll`) codes 0x0022002C (power-off time) and 0x00220030 (light-off time), in `src/board/power_policy.c`.
+- The events `PowerManager/ActivityTimer/EdUserActivity` and `EdSystemActivity` of Sharp's `pm.dll`, and `Display_Event_Backlight_Activating`, `Display_Event_Backlight_DIMBlanking` and `Display_Event_PowerManager_Update` of Sharp's backlight handling.
+- Sharp's boot clock (240 MHz CPU, 120 MHz AHB, VDDD 1.55 V), in `src/board/cpu_scaling.c`.
+- The kernel debug log ring at 0x401E0000, read by `src/board/register_dump.c`.
+- Sharp's raw touch driver (`touchra_.dll`): its `TRD_*` exports, `TRD_IOCTL_SAMPLE` 0x8000202F and the pressure limit code 0x80002043, in `src/touchraw`.
+
+### NXP BSP interface
+
+- The 454 MHz setpoint (CPUFRAC 19, CPU divider 1, AHB divider 3) and the order of the clock switch, from NXP's `dvfc.dll`, in `src/board/cpu_scaling.c`.
+
+### Platform Builder constant
+
+- `CACHE_SYNC_WRITEBACK` = 0x004 for `CacheSync`, in `src/compat/ce_compat.h`, used by `src/board/framebuffer.c`. Accepted for brain-display.
+
 ## Registers
 
-PWM (0x80064000), SSP2 (0x80014000), CLKCTRL (0x80040000) and APBH DMA descriptor fields are from the public i.MX28 Reference Manual.
+PWM (0x80064000), SSP2 (0x80014000), CLKCTRL (0x80040000), POWER (0x80044000), DIGCTL (0x8001C000), PINCTRL (0x80018000), LCDIF (0x80030000), PXP (0x8002A000) and APBH DMA descriptor fields are from the public i.MX28 Reference Manual.
