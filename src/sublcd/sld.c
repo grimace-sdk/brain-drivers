@@ -18,7 +18,6 @@
 //------------------------------------------------------------------------------
 #include <windows.h>
 #include <ceddk.h>
-#include "ce_compat.h"
 #include "st7586.h"
 #include "sub_backlight.h"
 #include "buzzer_tone.h"

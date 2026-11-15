@@ -20,7 +20,6 @@
 //------------------------------------------------------------------------------
 #include <windows.h>
 #include <pkfuncs.h>
-#include "ce_compat.h"
 #include "motion.h"
 #include "touchpad_ioctl.h"
 

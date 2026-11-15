@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 #include <windows.h>
 #include <ceddk.h>
-#include "ce_compat.h"
+#include <pkfuncs.h>
 #include "cspddk.h"
 #include "ssp_dma.h"
 

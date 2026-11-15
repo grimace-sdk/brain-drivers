@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 #include <windows.h>
 #include <ceddk.h>
-#include "ce_compat.h"
+#include <pkfuncs.h>
 #include "board_ioctl.h"
 #include "framebuffer.h"
 

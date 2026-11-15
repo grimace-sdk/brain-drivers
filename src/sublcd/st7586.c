@@ -14,7 +14,6 @@
 //------------------------------------------------------------------------------
 #include <windows.h>
 #include <ceddk.h>
-#include "ce_compat.h"
 #include "cspddk.h"
 #include "spi2.h"
 #include "st7586.h"
