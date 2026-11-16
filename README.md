@@ -12,7 +12,7 @@ Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28),
 
 The PW-A7300 `board.dll` adds `BRD_IOCTL_READ_FRAMEBUFFER` (`src/board/framebuffer.c`), which copies the framebuffer the display driver records in `HKLM\Software\Brain\Display` (`FramebufferPhysical`, `FramebufferWidth`, `FramebufferHeight`). The PW-SH2 and PW-SH4 builds are identical.
 
-Read [CLEANROOM.md](CLEANROOM.md) before changing anything. It lists the Sharp and NXP interface facts the user has accepted.
+Read [CLEANROOM.md](CLEANROOM.md) before changing anything. It lists the Sharp and NXP interface facts this project uses.
 
 ## Build
 

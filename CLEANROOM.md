@@ -1,6 +1,6 @@
 # Clean Room
 
-The sub LCD, touchpad and PW-A7300 framebuffer code is ported from the user's ce600 prototype, which was written alongside Sharp's drivers and NXP's BSP. The board and touchraw drivers come from pwsh2-boot at 1134d04. The backlight driver is new, written from the interface facts below. Only the user's own code was ported. Nothing in this repository is copied from Platform Builder, NXP/Freescale BSP sources or headers, or Sharp's binaries.
+The sub LCD, touchpad and PW-A7300 framebuffer code is ported from the maintainer's earlier, unpublished prototype, which was written alongside Sharp's drivers and NXP's BSP. The board and touchraw drivers come from [brainsurgeon](https://github.com/grimace-sdk/brainsurgeon). The backlight driver is new, written from the interface facts below. Only the maintainer's own code was ported. Nothing in this repository is copied from Platform Builder, NXP/Freescale BSP sources or headers, or Sharp's binaries.
 
 ## Not allowed
 
@@ -8,11 +8,11 @@ The sub LCD, touchpad and PW-A7300 framebuffer code is ported from the user's ce
 - Microsoft Platform Builder sources and headers.
 - Sharp's binaries, disassembled or otherwise.
 
-If something you need is only in one of these, ask the user.
+If something you need is only in one of these, open an issue before using it.
 
 ## Accepted interface facts
 
-The user accepted these on 2026-11-15 as non-protectable platform interface facts, despite their source: first those for the sub LCD and touchpad, then those for the board, touchraw and PW-A7300 framebuffer code, then those for the backlight driver ("Green for hardware facts"). `src/compat/cspddk.h` and `src/compat/spi2.h` declare only the names, values and layouts the drivers use; they are not copies of NXP's headers.
+The maintainer accepted these on 2026-11-15 as platform interface facts, needed to talk to the hardware and Sharp's drivers, despite their source: first those for the sub LCD and touchpad, then those for the board, touchraw and PW-A7300 framebuffer code, then those for the backlight driver. `src/compat/cspddk.h` and `src/compat/spi2.h` declare only the names, values and layouts the drivers use; they are not copies of NXP's headers.
 
 ### Sharp image or binary
 
@@ -40,7 +40,7 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 - `DDK_IOMUX_PIN` values `DDK_IOMUX_SSP2_D0_1` 0x52, `DDK_IOMUX_AUART1_RX` 0x64, `DDK_IOMUX_AUART1_TX` 0x65 and `DDK_IOMUX_PWM2` 0x72; `DDK_IOMUX_MODE_00` 0, `DDK_IOMUX_MODE_02` 2 and `DDK_IOMUX_MODE_GPIO` 3; `DDK_IOMUX_PAD_DRIVE_4MA` 0, `DDK_IOMUX_PAD_PULL_ENABLE` 0, `DDK_IOMUX_PAD_PULL_DISABLE` 1, `DDK_IOMUX_PAD_VOLTAGE_3V3` 1; `DDK_APBH_CHANNEL_SSP2` 2.
 - The `SPI2:` driver interface: `SPI_IOCTL_EXCHANGE`, `SPI_IOCTL_SSPCONFIGURE` and `SPI_IOCTL_SSPCONFIGTIMING` (`FILE_DEVICE_BUS_EXTENDER` functions 3030, 3033 and 3038), the `SSP_INIT`, `SPI_BUSCONFIG_T` and `SPI_XCH_PKT_T` layouts, `SSP_MODE_SPI` 0, and `SPI_IDENTIFY_SPEED` 0.
 - The 454 MHz setpoint (CPUFRAC 19, CPU divider 1, AHB divider 3) and the order of the clock switch, from NXP's `dvfc.dll`, in `src/board/cpu_scaling.c`.
-- The factory touch calibration from Sharp's `VMC1:` driver: IOCTL 0x80002093 with no input returns 12 bytes, six little-endian int16 values a, b, c, d, e, f, with screen x = c + a*rx/b, used in `src/touchraw/README.md` to explain the edge targets. The user accepted this on 2026-11-16.
+- The factory touch calibration from Sharp's `VMC1:` driver: IOCTL 0x80002093 with no input returns 12 bytes, six little-endian int16 values a, b, c, d, e, f, with screen x = c + a*rx/b, used in `src/touchraw/README.md` to explain the edge targets. Accepted on 2026-11-16.
 
 ### Platform Builder constant
 
@@ -51,7 +51,7 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 
 Not provenance items:
 
-- The backlight curve, the 5% low-current crossover, `DimLevel` 20, `FloorLuminance` and the `HKLM\Software\Brain\Backlight` settings. The 1/2000 minimum, the 24% `LowCurrentPercent` and the 0.36% `FloorLuminance` defaults come from the user's PW-A7300 tests on 2026-11-15.
+- The backlight curve, the 5% low-current crossover, `DimLevel` 20, `FloorLuminance` and the `HKLM\Software\Brain\Backlight` settings. The 1/2000 minimum, the 24% `LowCurrentPercent` and the 0.36% `FloorLuminance` defaults come from PW-A7300 tests on 2026-11-15.
 - The kernel debug log ring that `src/board/register_dump.c` reads: 0x401E0000 on the PW-SH2 (u-boot-brain's `pwsh2_ce_defconfig`) and 0x40180000 on the PW-A7300 (u-boot-brain's Kconfig default, which `pwa7300_ce_defconfig` keeps), matching make-boot-nkp's `--debug-log-address`. `pwsh4_ce_defconfig` does not enable the log; the PW-SH4 build uses 0x401E0000.
 
 ## Registers
