@@ -40,6 +40,7 @@ The user accepted these on 2026-11-15 as non-protectable platform interface fact
 - `DDK_IOMUX_PIN` values `DDK_IOMUX_SSP2_D0_1` 0x52, `DDK_IOMUX_AUART1_RX` 0x64, `DDK_IOMUX_AUART1_TX` 0x65 and `DDK_IOMUX_PWM2` 0x72; `DDK_IOMUX_MODE_00` 0, `DDK_IOMUX_MODE_02` 2 and `DDK_IOMUX_MODE_GPIO` 3; `DDK_IOMUX_PAD_DRIVE_4MA` 0, `DDK_IOMUX_PAD_PULL_ENABLE` 0, `DDK_IOMUX_PAD_PULL_DISABLE` 1, `DDK_IOMUX_PAD_VOLTAGE_3V3` 1; `DDK_APBH_CHANNEL_SSP2` 2.
 - The `SPI2:` driver interface: `SPI_IOCTL_EXCHANGE`, `SPI_IOCTL_SSPCONFIGURE` and `SPI_IOCTL_SSPCONFIGTIMING` (`FILE_DEVICE_BUS_EXTENDER` functions 3030, 3033 and 3038), the `SSP_INIT`, `SPI_BUSCONFIG_T` and `SPI_XCH_PKT_T` layouts, `SSP_MODE_SPI` 0, and `SPI_IDENTIFY_SPEED` 0.
 - The 454 MHz setpoint (CPUFRAC 19, CPU divider 1, AHB divider 3) and the order of the clock switch, from NXP's `dvfc.dll`, in `src/board/cpu_scaling.c`.
+- The factory touch calibration from Sharp's `VMC1:` driver: IOCTL 0x80002093 with no input returns 12 bytes, six little-endian int16 values a, b, c, d, e, f, with screen x = c + a*rx/b, used by `src/touchraw/touchraw.c` to scale raw X for the PW-SH4's wider desktop. The user accepted this on 2026-11-16.
 
 ### Platform Builder constant
 
