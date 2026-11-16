@@ -61,7 +61,7 @@ if(BRAIN_BOARD STREQUAL "pwa7300")
     driver_options(sublcd)
 endif()
 
-if(BRAIN_BOARD STREQUAL "pwa7300" OR BRAIN_BOARD STREQUAL "pwsh2")
+if(BRAIN_BOARD STREQUAL "pwa7300" OR BRAIN_BOARD STREQUAL "pwsh2" OR BRAIN_BOARD STREQUAL "pwsh4")
     grimace_add_library(backlight src/backlight/backlight.c src/backlight/backlight_curve.c
         OUTPUT backlight.dll
         EXPORTS BKL_Init BKL_Deinit BKL_Open BKL_Close BKL_Read BKL_Write BKL_Seek BKL_IOControl

@@ -31,7 +31,7 @@ static const BACKLIGHT_BOARD s_Board =
     TRUE
 };
 
-#elif defined(BRAIN_BOARD_pwsh2)
+#elif defined(BRAIN_BOARD_pwsh2) || defined(BRAIN_BOARD_pwsh4)
 
 static const BACKLIGHT_BOARD s_Board =
 {
