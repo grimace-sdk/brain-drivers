@@ -27,6 +27,8 @@ node tools/make-boot-nkp.mjs ... --skip --replace-module board.dll=out/board.dll
 
 Sharp boots the i.MX28 at 240 MHz CPU / 120 MHz AHB with VDDD already at 1.55 V, NXP's voltage for 454 MHz, and never registers NXP's `dvfc.dll` (which also reclocks DDR with EVK memory timings). `cpu_scaling.c` switches only CPU and AHB between that and NXP's high setpoint (CPUFRAC 19, CPU divider 1, AHB divider 3), in NXP's order; DDR (196 MHz, near the controller's limit) and VDDD are untouched. Dynamic mode goes up when a 50 ms window is half busy and down after 500 ms under a quarter busy.
 
+`HW_CLKCTRL_FRAC0` is byte-addressable only (RM 10.8.24) and also holds the IO0, IO1 and EMI dividers, so only its CPU byte is read and written; the switch waits for `CPU_STABLE` to invert. `HW_CLKCTRL_HBUS` is written only once `ASM_BUSY` is clear.
+
 Tested: 5 min of memory patterns over 32 MB at 454 MHz and 10 min while switching every 50 ms (3,145 switches), no errors. CPU-bound loop 1.85x faster; a cold My Device open 810 ms (before fast blits) to about 570 ms.
 
 ## Power Policy

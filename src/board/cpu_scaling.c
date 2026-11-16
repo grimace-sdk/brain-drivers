@@ -29,6 +29,7 @@
 #define CPU_DIV_MASK                0x0000003F
 #define CPU_BUSY_MASK               0x30000000
 #define HBUS_DIV_MASK               0x0000003F
+#define HBUS_ASM_BUSY               0x80000000
 #define FRAC0_CPUFRAC_MASK          0x0000003F
 #define FRAC0_CPU_STABLE            0x00000040
 #define FRAC0_CLKGATECPU            0x00000080
@@ -80,6 +81,16 @@ static void WriteClk(DWORD Offset, UINT32 Value)
     s_pClkctrl[Offset / sizeof(UINT32)] = Value;
 }
 
+static volatile UINT8* Frac0CpuByte()
+{
+    return (volatile UINT8*)s_pClkctrl + CLKCTRL_FRAC0;
+}
+
+static DWORD ReadCpuFrac()
+{
+    return *Frac0CpuByte() & FRAC0_CPUFRAC_MASK;
+}
+
 static void WaitCpuClock()
 {
     DWORD Polls = 0;
@@ -96,15 +107,23 @@ static void SetCpuDiv(DWORD Divider)
 
 static void SetCpuFrac(DWORD Frac)
 {
+    volatile UINT8* pCpuFrac = Frac0CpuByte();
+    UINT8 Before = *pCpuFrac;
     DWORD Polls = 0;
 
-    WriteClk(CLKCTRL_FRAC0, (ReadClk(CLKCTRL_FRAC0) & ~(FRAC0_CPUFRAC_MASK | FRAC0_CLKGATECPU)) | Frac);
-    while (!(ReadClk(CLKCTRL_FRAC0) & FRAC0_CPU_STABLE) && ++Polls < BUSY_POLL_LIMIT)
+    if ((Before & (FRAC0_CPUFRAC_MASK | FRAC0_CLKGATECPU)) == Frac)
+        return;
+    *pCpuFrac = (UINT8)((Before & ~(FRAC0_CPUFRAC_MASK | FRAC0_CLKGATECPU)) | Frac);
+    while (!((*pCpuFrac ^ Before) & FRAC0_CPU_STABLE) && ++Polls < BUSY_POLL_LIMIT)
         ;
 }
 
 static void SetHbusDiv(DWORD Divider)
 {
+    DWORD Polls = 0;
+
+    while ((ReadClk(CLKCTRL_HBUS) & HBUS_ASM_BUSY) && ++Polls < BUSY_POLL_LIMIT)
+        ;
     WriteClk(CLKCTRL_HBUS, (ReadClk(CLKCTRL_HBUS) & ~HBUS_DIV_MASK) | Divider);
 }
 
@@ -115,7 +134,7 @@ static DWORD CpuMHz(const SETPOINT* pSetpoint)
 
 static void ReadSetpoint(SETPOINT* pSetpoint)
 {
-    pSetpoint->CpuFrac = ReadClk(CLKCTRL_FRAC0) & FRAC0_CPUFRAC_MASK;
+    pSetpoint->CpuFrac = ReadCpuFrac();
     pSetpoint->CpuDiv = ReadClk(CLKCTRL_CPU) & CPU_DIV_MASK;
     pSetpoint->HbusDiv = ReadClk(CLKCTRL_HBUS) & HBUS_DIV_MASK;
 }
@@ -336,7 +355,7 @@ void CpuScalingGetStatus(CPU_SCALING_STATUS* pStatus)
     if (!s_pClkctrl)
         return;
     pStatus->Mode = s_Mode;
-    pStatus->CpuMHz = PLL_MHZ * FRAC_NUMERATOR / (ReadClk(CLKCTRL_FRAC0) & FRAC0_CPUFRAC_MASK) / (ReadClk(CLKCTRL_CPU) & CPU_DIV_MASK);
+    pStatus->CpuMHz = PLL_MHZ * FRAC_NUMERATOR / ReadCpuFrac() / (ReadClk(CLKCTRL_CPU) & CPU_DIV_MASK);
     pStatus->AhbMHz = pStatus->CpuMHz / (ReadClk(CLKCTRL_HBUS) & HBUS_DIV_MASK);
     pStatus->BusyPercent = s_BusyPercent;
     pStatus->Switches = s_Switches;
