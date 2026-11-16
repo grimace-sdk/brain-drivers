@@ -2,7 +2,7 @@
 //
 //  File:  touchraw.c
 //
-//  TRD1:, a pass-through to Sharp's PW-SH2 touchraw.dll (in ROM as
+//  TRD1:, a pass-through to Sharp's touchraw.dll (in ROM as
 //  touchra_.dll once the boot bundle replaces it). It records every sample
 //  Sharp's touch driver reads, for TRD_IOCTL_READ_LOG, and stretches the
 //  raw bands next to the left, top and bottom edges. It also raises Sharp's
@@ -21,19 +21,19 @@
 
 #define ORIGINAL_DLL                TEXT("touchra_.dll")
 #define SETTINGS_KEY                TEXT("Software\\Brain\\Touch")
-#define DISPLAY_KEY                 TEXT("Software\\Brain\\Display")
-#define CALIBRATION_DEVICE          TEXT("VMC1:")
 #define RAW_MAXIMUM                 4095
-#define CALIBRATED_WIDTH            800
 #define TRD_IOCTL_SET_PRESSURE_LIMIT 0x80002043
-#define VMC_IOCTL_TOUCH_CALIBRATION 0x80002093
 
 #if defined(BRAIN_BOARD_pwsh4)
-#define DEFAULT_STRETCH             FALSE
 #define DEFAULT_PRESSURE_LIMIT      0
+#define DEFAULT_LEFT_EDGE           200, 200, 200
+#define DEFAULT_TOP_EDGE            3840, 3870, 3955
+#define DEFAULT_BOTTOM_EDGE         370, 345, 218
 #else
-#define DEFAULT_STRETCH             TRUE
 #define DEFAULT_PRESSURE_LIMIT      3072
+#define DEFAULT_LEFT_EDGE           400, 205, 147
+#define DEFAULT_TOP_EDGE            3600, 3833, 3933
+#define DEFAULT_BOTTOM_EDGE         560, 325, 253
 #endif
 
 typedef struct
@@ -43,16 +43,6 @@ typedef struct
     LONG Reach;
     LONG Target;
 } EDGE;
-
-typedef struct
-{
-    SHORT XNumerator;
-    SHORT XDenominator;
-    SHORT XOffset;
-    SHORT YNumerator;
-    SHORT YDenominator;
-    SHORT YOffset;
-} FACTORY_CALIBRATION;
 
 typedef DWORD (*INIT_FUNCTION)(DWORD);
 typedef BOOL (*CONTEXT_FUNCTION)(DWORD);
@@ -72,15 +62,12 @@ static POWER_FUNCTION s_pPowerDown;
 static POWER_FUNCTION s_pPowerUp;
 static CRITICAL_SECTION s_LogLock;
 static TRD_LOG s_Log;
-static BOOL s_bStretch = DEFAULT_STRETCH;
+static BOOL s_bStretch = TRUE;
 static DWORD s_PressureLimit = DEFAULT_PRESSURE_LIMIT;
-static BOOL s_bScaleResolved;
-static LONG s_ScreenWidth;
-static LONG s_ScaleOffset;
 
-static EDGE s_LeftEdge = { TEXT("Left"), 400, 205, 147 };
-static EDGE s_TopEdge = { TEXT("Top"), 3600, 3833, 3933 };
-static EDGE s_BottomEdge = { TEXT("Bottom"), 560, 325, 253 };
+static EDGE s_LeftEdge = { TEXT("Left"), DEFAULT_LEFT_EDGE };
+static EDGE s_TopEdge = { TEXT("Top"), DEFAULT_TOP_EDGE };
+static EDGE s_BottomEdge = { TEXT("Bottom"), DEFAULT_BOTTOM_EDGE };
 
 static LONG ReadSetting(HKEY hKey, LPCTSTR pName, LPCTSTR pSuffix, LONG Default)
 {
@@ -124,90 +111,12 @@ static LONG StretchEdge(LONG Value, const EDGE* pEdge)
     return Value < 0 ? 0 : Value > RAW_MAXIMUM ? RAW_MAXIMUM : Value;
 }
 
-static LONG ReadDisplayWidth()
-{
-    HKEY hKey;
-    LONG Width, Height;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, DISPLAY_KEY, 0, 0, &hKey) != ERROR_SUCCESS)
-        return CALIBRATED_WIDTH;
-    Width = ReadSetting(hKey, TEXT("FramebufferWidth"), TEXT(""), 0);
-    Height = ReadSetting(hKey, TEXT("FramebufferHeight"), TEXT(""), 0);
-    RegCloseKey(hKey);
-    if (Height > Width)
-        Width = Height;
-    return Width > 0 ? Width : CALIBRATED_WIDTH;
-}
-
-static LONG ReadScreenWidth()
-{
-    HKEY hKey;
-    LONG Width = 0;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, SETTINGS_KEY, 0, 0, &hKey) == ERROR_SUCCESS)
-    {
-        Width = ReadSetting(hKey, TEXT("ScreenWidth"), TEXT(""), 0);
-        RegCloseKey(hKey);
-    }
-    return Width > 0 ? Width : ReadDisplayWidth();
-}
-
-static BOOL ReadFactoryCalibration(FACTORY_CALIBRATION* pCalibration)
-{
-    HANDLE hDevice;
-    DWORD Returned = 0;
-    BOOL bResult;
-
-    hDevice = CreateFile(CALIBRATION_DEVICE, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
-    if (hDevice == INVALID_HANDLE_VALUE)
-    {
-        RETAILMSG(1, (TEXT("TouchRaw: cannot open %s (%u)\r\n"), CALIBRATION_DEVICE, GetLastError()));
-        return FALSE;
-    }
-    bResult = DeviceIoControl(hDevice, VMC_IOCTL_TOUCH_CALIBRATION, NULL, 0, pCalibration, sizeof(*pCalibration), &Returned, NULL);
-    CloseHandle(hDevice);
-    if (!bResult || Returned < sizeof(*pCalibration) || pCalibration->XNumerator == 0 || pCalibration->XDenominator == 0)
-    {
-        RETAILMSG(1, (TEXT("TouchRaw: no factory calibration (%u)\r\n"), bResult ? 0 : GetLastError()));
-        return FALSE;
-    }
-    return TRUE;
-}
-
-static void ResolveScale()
-{
-    FACTORY_CALIBRATION Calibration;
-    LONG Width = ReadScreenWidth();
-
-    s_bScaleResolved = TRUE;
-    if (Width == CALIBRATED_WIDTH || !ReadFactoryCalibration(&Calibration))
-        return;
-    s_ScaleOffset = MulDiv(Calibration.XOffset * (Width - CALIBRATED_WIDTH), Calibration.XDenominator,
-        CALIBRATED_WIDTH * Calibration.XNumerator);
-    s_ScreenWidth = Width;
-    RETAILMSG(1, (TEXT("TouchRaw: x scaled %d/%d, offset %d\r\n"), Width, CALIBRATED_WIDTH, s_ScaleOffset));
-}
-
-static LONG ScaleX(LONG Value)
-{
-    if (!s_ScreenWidth)
-        return Value;
-    Value = MulDiv(Value, s_ScreenWidth, CALIBRATED_WIDTH) + s_ScaleOffset;
-    return Value < 0 ? 0 : Value > RAW_MAXIMUM ? RAW_MAXIMUM : Value;
-}
-
 static void StretchSample(LONG* pSample)
 {
-    if (pSample[0] <= 0)
+    if (!s_bStretch || pSample[0] <= 0)
         return;
-    if (!s_bScaleResolved)
-        ResolveScale();
-    if (s_bStretch)
-    {
-        pSample[1] = StretchEdge(pSample[1], &s_LeftEdge);
-        pSample[2] = StretchEdge(StretchEdge(pSample[2], &s_TopEdge), &s_BottomEdge);
-    }
-    pSample[1] = ScaleX(pSample[1]);
+    pSample[1] = StretchEdge(pSample[1], &s_LeftEdge);
+    pSample[2] = StretchEdge(StretchEdge(pSample[2], &s_TopEdge), &s_BottomEdge);
 }
 
 static BOOL LoadOriginal()
