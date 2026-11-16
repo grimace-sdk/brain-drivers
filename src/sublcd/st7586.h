@@ -14,6 +14,7 @@
 BOOL St7586Open();
 void St7586PowerOn(int VopBase);
 void St7586PowerOff();
+void St7586SleepWithoutYield();
 int St7586CalibratedVopBase();
 void St7586SetVopBase(int VopBase);
 void St7586SetVopOffset(int Offset);

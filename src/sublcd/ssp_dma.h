@@ -11,5 +11,6 @@
 UINT16* SspDmaInit(DWORD Words);
 BOOL SspDmaConfigure();
 BOOL SspDmaSend(const UINT16* pWords, DWORD Count);
+void SspDmaSetNoYield(BOOL bNoYield);
 
 #endif /* __SSP_DMA_H__ */

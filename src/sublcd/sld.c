@@ -407,7 +407,7 @@ void SLD_PowerDown(DWORD Context)
     if (!TryEnterCriticalSection(&s_Lock))
         return;
     if (s_bPanelOn)
-        St7586PowerOff();
+        St7586SleepWithoutYield();
     s_bPanelOn = FALSE;
     LeaveCriticalSection(&s_Lock);
 }

@@ -73,6 +73,8 @@ static UINT16 s_LocalWords[MAX_WORDS];
 static UINT16* s_Words = s_LocalWords;
 static BOOL s_bDmaChecked;
 
+static BOOL s_bNoYield;
+
 static BOOL Exchange(const UINT16* pWords, UINT32 Count)
 {
     SPI_BUSCONFIG_T Bus;
@@ -84,8 +86,8 @@ static BOOL Exchange(const UINT16* pWords, UINT32 Count)
     *SHARP_SPI_ACTIVE = 1;
     bResult = SspDmaSend(pWords, Count);
     *SHARP_SPI_ACTIVE = 0;
-    if (bResult)
-        return TRUE;
+    if (bResult || s_bNoYield)
+        return bResult;
     memset(&Bus, 0, sizeof(Bus));
     Bus.SspCtrl0.U = SPI_CTRL0_IGNORE_CRC;
     Bus.usepolling = TRUE;
@@ -318,6 +320,16 @@ void St7586PowerOff()
     Sleep(120);
     SetResetLine(FALSE);
     Sleep(200);
+}
+
+void St7586SleepWithoutYield()
+{
+    s_bNoYield = TRUE;
+    SspDmaSetNoYield(TRUE);
+    Command0(COMMAND_DISPLAY_OFF);
+    Command0(COMMAND_SLEEP_IN);
+    SspDmaSetNoYield(FALSE);
+    s_bNoYield = FALSE;
 }
 
 //------------------------------------------------------------------------------

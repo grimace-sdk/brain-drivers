@@ -52,6 +52,7 @@
 
 #define SPIN_POLLS                  2000
 #define TIMEOUT_MS                  200
+#define NO_YIELD_POLL_FACTOR        100
 
 #define SETTINGS_KEY                TEXT("Software\\Brain\\SubLCD")
 #define DMA_VALUE                   TEXT("SpiDma")
@@ -74,6 +75,7 @@ static UINT16* s_pWords;
 static DWORD s_WordsPhysical;
 static DWORD s_WordCapacity;
 static BOOL s_bEnabled;
+static BOOL s_bNoYield;
 
 static DWORD ReadSetting(LPCTSTR pName, DWORD Default)
 {
@@ -232,9 +234,9 @@ BOOL SspDmaSend(const UINT16* pWords, DWORD Count)
     Start = GetTickCount();
     while (DDKApbhDmaGetPhore(DMA_CHANNEL) != 0)
     {
-        if (++Polls < SPIN_POLLS)
+        if (++Polls < SPIN_POLLS || (s_bNoYield && Polls < SPIN_POLLS * NO_YIELD_POLL_FACTOR))
             continue;
-        if (GetTickCount() - Start > TIMEOUT_MS)
+        if (s_bNoYield || GetTickCount() - Start > TIMEOUT_MS)
         {
             RETAILMSG(TRUE, (TEXT("SubLCD: SPI DMA timed out, using SPI2:\r\n")));
             ResetChannel();
@@ -245,4 +247,9 @@ BOOL SspDmaSend(const UINT16* pWords, DWORD Count)
         Sleep(1);
     }
     return TRUE;
+}
+
+void SspDmaSetNoYield(BOOL bNoYield)
+{
+    s_bNoYield = bNoYield;
 }
