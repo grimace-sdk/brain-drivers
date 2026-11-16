@@ -40,10 +40,11 @@ if(BRAIN_BOARD STREQUAL "pwa7300")
     target_include_directories(board PRIVATE src/compat)
 endif()
 
-if(BRAIN_BOARD STREQUAL "pwsh2")
+if(BRAIN_BOARD STREQUAL "pwsh2" OR BRAIN_BOARD STREQUAL "pwsh4")
     grimace_add_library(touchraw src/touchraw/touchraw.c
         OUTPUT touchraw.dll EXPORTS TRD_Init TRD_Deinit TRD_Open TRD_Close TRD_Read TRD_IOControl TRD_PowerDown TRD_PowerUp)
     target_link_libraries(touchraw PRIVATE grimace::ceddk)
+    target_compile_definitions(touchraw PRIVATE BRAIN_BOARD_${BRAIN_BOARD})
     ce_options(touchraw)
 endif()
 

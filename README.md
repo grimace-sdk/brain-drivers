@@ -5,7 +5,7 @@ Windows CE 6.0 drivers for the Sharp Brain PW-SH2, PW-SH4 and PW-A7300 (i.MX28),
 | Driver | Output | Device | Boards | Registry | Replaces |
 | --- | --- | --- | --- | --- | --- |
 | [Board](src/board/README.md) | `board.dll` | `BRD1:` | all | `src/board/board.reg` | Nothing; new driver |
-| [Touch shim](src/touchraw/README.md) | `touchraw.dll` | `TRD1:` | PW-SH2 | Sharp's | Sharp's `touchraw.dll`, kept as `touchra_.dll` |
+| [Touch shim](src/touchraw/README.md) | `touchraw.dll` | `TRD1:` | PW-SH2, PW-SH4 | Sharp's | Sharp's `touchraw.dll`, kept as `touchra_.dll` |
 | Touchpad | `touchpad.dll` | `PAD1:` | PW-A7300 | `src/touchpad/touchpad.reg` | Nothing; new driver |
 | Sub LCD | `EDNA2_slcd_ST7586.dll` | `SLD1:` | PW-A7300 | Sharp's | Sharp's `EDNA2_slcd_ST7586.dll` |
 | [Backlight](src/backlight/README.md) | `backlight.dll` | `BKL1:` | PW-A7300, PW-SH2, PW-SH4 | Sharp's | Sharp's `backlight.dll` |
