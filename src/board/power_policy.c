@@ -226,6 +226,7 @@ static DWORD WINAPI PolicyThread(LPVOID pContext)
         return 0;
     OpenPowerQueue();
     WatchTimeouts();
+    ReloadTimeouts();
     for (Attempt = 0; Attempt < OPEN_ATTEMPTS && !DisableSharpTimers(); Attempt++)
         Sleep(OPEN_RETRY_MS);
     for (;;)

@@ -34,7 +34,8 @@ Tested: 5 min of memory patterns over 32 MB at 454 MHz and 10 min while switchin
 `power_policy.c` makes Control Panel > Power > Schemes (`HKLM\System\CurrentControlSet\Control\Power\Timeouts`) work. Sharp's `pm.dll` (both ROMs) is Microsoft's PDD/DEFAULT state machine (On, UserIdle, SystemIdle, Suspend) on Sharp's `EdUserActivity` and `EdSystemActivity` timers, which only Sharp's touch drivers and SharpLib reset; it reads the timeouts at boot and on `PowerManager/ReloadActivityTimeouts`.
 
 - While the standard `UserActivity` timer (reset by GWES for every input, keys included) is active, `EdUserActivity` is reset once a second.
-- A change to the Timeouts key (Control Panel, or the restore from the card) signals the reload.
+- The reload is signalled once when the policy starts watching the Timeouts key, so values written before then are used, and again at every change (Control Panel, Brain Control, or the restore from the card).
+- The ROM sets all six timeouts to 0 (never), and Sharp's own timers are off, so without timeouts from the card the Brain never dims or suspends. brainsurgeon's bstart writes them at boot from `power.txt`.
 - Sharp's `edna2_powermgr.dll` (`PWR1:`) backlight-off and power-off timers (IOCTL 0x220030 and 0x22002C) are set to 0, never armed, so the timeouts have one owner.
 - On `useridle` and `systemidle` the backlight is dimmed (`Display_Event_Backlight_Activating` and `Display_Event_Backlight_DIMBlanking` reset, then `Display_Event_PowerManager_Update`) and the CPU is held at Sharp's clock; on `on` both are restored. SystemIdle turns the backlight and display off and Suspend suspends, as Sharp's registry already maps them.
 - The standard `SystemActivity` timer is not passed on: something resets it about 20 times a second even with every user process stopped, which would block suspend. Programs that must keep the Brain awake reset `PowerManager/ActivityTimer/EdSystemActivity`.
